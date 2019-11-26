@@ -1,0 +1,82 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+
+    let listWordDefault = [];
+    // let listWord = [];
+    let listPartWord = {};
+    let word = prompt("Digite a palavra").toUpperCase();
+    let objWord = {total:1};
+    let listPartFinal = [];
+    
+    $(document).ready(function(){
+        fetch('./words.txt')
+        .then(result => result.text())
+        .then(text => {
+            listWordDefault = text.split("\n");
+            console.log("Inicio...");
+            if(word!=null){
+                for(let i = 0; i < word.length; i++) objWord[word.charAt(i)] = (i+2);
+                for(let i = 0; i < word.length; i++ ){
+                    objWord.total *= objWord[word.charAt(i)];
+                }
+                console.log("Carregando...");
+                permuta('', word);
+
+                for (key in listPartWord) {
+                    let sizePart = listPartWord[key].size;
+                    let sizePartBackup = listPartWord[key].size;
+
+                    let stringVerify = listPartWord[key].part;
+                    let stringBackup = listPartWord[key].part;
+
+                    for(key in listPartWord){
+                        sizePart *= listPartWord[key].size;
+                        
+                        if(sizePart<objWord.total){
+                            stringVerify += " " + listPartWord[key].part;
+                            if(word.includes(stringVerify)){
+                                stringBackup += stringVerify;
+                                sizePartBackup = sizePart;
+                            }else{
+                                stringVerify = stringBackup;
+                                sizePart = sizePartBackup;
+                            }
+                        }else if(sizePart==objWord.total){
+                            stringVerify += " " + listPartWord[key].part;
+                            listPartFinal.push(stringVerify);
+                        }else{
+                            stringVerify = stringBackup;
+                            sizePart = sizePartBackup;
+                        }
+                    }
+                }
+                console.log(listPartFinal);
+                console.log("Fim.");
+            }
+        });
+    });
+        
+    function permuta (cad_I, cad_D) {
+        if (cad_D.length == 1) {
+            listWordDefault.forEach(e => {
+                for(let i = 1; i <= e.length; i++){
+                    let wordNow = (cad_I + cad_D).slice(0, i);
+                    if(e==wordNow&&!listPartFinal.includes(wordNow)){
+                        let size = 1;
+                        wordNow.split("").forEach((e, j) => {
+                            size *= objWord[wordNow.charAt(j)];
+                        });
+                        if(size==objWord["total"]) listPartFinal.push(wordNow);
+                        else listPartWord[wordNow] = {part: wordNow, size: size};
+                    }
+                }
+            });
+            
+            return;
+        }
+        for (let i = 0; i < cad_D.length; i++) {
+            permuta (cad_I + cad_D.charAt(i), cad_D.replace(cad_D.charAt(i),""));
+        } 
+        return;
+    }
+</script>      
